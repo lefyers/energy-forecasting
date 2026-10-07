@@ -2,29 +2,31 @@
 
 Исследовательский проект по прогнозированию почасового энергопотребления.
 
-Для исследования использовал исторический датасет из **Kaggle** за период `2004–2018`. На этих данных проводил EDA, feature engineering, эксперименты с признаками и моделями, временную валидацию и анализ ошибок.
+Для исследования использовал исторический датасет из **Kaggle** за период `2004–2018`. На этих данных проводил EDA, feature engineering, эксперименты с моделями, временную валидацию и анализ ошибок.
 
 ### Подход
 
+* Анализ и очистка временных рядов
 * Calendar и cyclic features
 * Lag features и rolling statistics
 * `HistGradientBoostingRegressor`
-* Chronological split и `TimeSeriesSplit`
+* Chronological split
+* `TimeSeriesSplit`
 * Error analysis и permutation importance
+* Проверка стабильности модели на разных временных периодах
 
-### Результаты
+### Структура
 
-| Model                |        MAE |       RMSE |
-| -------------------- | ---------: | ---------: |
-| Naive baseline       |     407.73 |     525.67 |
-| HistGradientBoosting | **117.33** | **156.50** |
+```text
+notebooks/
+├── 01_eda.ipynb
+├── 02_modeling.ipynb
+└── 03_validation.ipynb
+```
 
-TimeSeriesSplit:
-
-* Mean MAE: **120.55**
-* MAE std: **5.20**
-
-Также проверял различные гипотезы по feature engineering. Например, `lag_4` и `lag_5` ухудшили результат и были исключены.
+* `01_eda.ipynb` — загрузка данных, очистка и исследовательский анализ.
+* `02_modeling.ipynb` — baseline, feature engineering, обучение модели и анализ ошибок.
+* `03_validation.ipynb` — временная кросс-валидация и проверка стабильности модели.
 
 ### Tech Stack
 
