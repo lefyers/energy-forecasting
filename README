@@ -1,235 +1,31 @@
 # Energy Forecasting
 
-Hourly energy consumption forecasting using machine learning and time-series validation.
+Исследовательский проект по прогнозированию почасового энергопотребления.
 
-## Project Overview
+Для исследования использовал исторический датасет из **Kaggle** за период `2004–2018`. На этих данных проводил EDA, feature engineering, эксперименты с признаками и моделями, временную валидацию и анализ ошибок.
 
-The goal of the project is to forecast hourly energy consumption from historical time-series data and evaluate the model using validation methods appropriate for temporal data.
+### Подход
 
-The project focuses on:
+* Calendar и cyclic features
+* Lag features и rolling statistics
+* `HistGradientBoostingRegressor`
+* Chronological split и `TimeSeriesSplit`
+* Error analysis и permutation importance
 
-* time-series exploratory data analysis;
-* feature engineering;
-* baseline comparison;
-* gradient boosting;
-* time-series cross-validation;
-* backtesting;
-* error analysis;
-* overfitting and robustness checks.
+### Результаты
 
-## Dataset
+| Model                |        MAE |       RMSE |
+| -------------------- | ---------: | ---------: |
+| Naive baseline       |     407.73 |     525.67 |
+| HistGradientBoosting | **117.33** | **156.50** |
 
-The dataset contains hourly energy consumption observations.
+TimeSeriesSplit:
 
-Time period:
+* Mean MAE: **120.55**
+* MAE std: **5.20**
 
-* **Start:** 2004-10-01
-* **End:** 2018-08-03
-* **Missing values:** 0
+Также проверял различные гипотезы по feature engineering. Например, `lag_4` и `lag_5` ухудшили результат и были исключены.
 
-The data was sorted chronologically before model training and evaluation.
+### Tech Stack
 
-## Project Structure
-
-```text
-energy-forecasting/
-│
-├── data/
-│   ├── raw/
-│   └── processed/
-│
-├── notebooks/
-│   ├── 01_eda.ipynb
-│   ├── 02_baseline.ipynb
-│   ├── 03_boosting.ipynb
-│   └── 04_validation.ipynb
-│
-├── src/
-│   ├── features/
-│   ├── models/
-│   ├── validation/
-│   └── evaluation/
-│
-├── models/
-│   └── energy_forecasting_model.joblib
-│
-├── README.md
-└── requirements.txt
-```
-
-## Feature Engineering
-
-The model uses calendar, lag and rolling-window features.
-
-### Calendar features
-
-* `hour`
-* `day_of_week`
-* `month`
-* `day_of_year`
-
-### Cyclic features
-
-* `hour_sin`
-* `hour_cos`
-* `dow_sin`
-* `dow_cos`
-
-### Lag features
-
-* `lag_1`
-* `lag_2`
-* `lag_3`
-* `lag_6`
-* `lag_12`
-* `lag_24`
-* `lag_168`
-
-### Rolling features
-
-* `rolling_mean_24`
-* `rolling_mean_168`
-
-Feature importance was evaluated using permutation importance.
-
-The most important feature was the previous-hour consumption (`lag_1`), followed by short-term lag and hourly features.
-
-## Model
-
-The final model is:
-
-```python
-HistGradientBoostingRegressor(
-    max_iter=300,
-    random_state=42
-)
-```
-
-The data was split chronologically using an 80/20 train-test split.
-
-No future observations were used when constructing lag-based features, avoiding look-ahead leakage.
-
-## Baseline
-
-A naive baseline was created using the previous hour's energy consumption:
-
-```text
-Baseline prediction = lag_1
-```
-
-### Baseline results
-
-| Metric | Baseline |
-| ------ | -------: |
-| MAE    |   407.73 |
-| RMSE   |   525.67 |
-
-## Final Model Results
-
-### Holdout test set
-
-| Metric |     Result |
-| ------ | ---------: |
-| MAE    | **117.33** |
-| RMSE   | **156.50** |
-
-Compared with the naive baseline:
-
-* **MAE improved by ~71.2%**
-* **RMSE improved by ~70.2%**
-
-This demonstrates that the model captures more than simple hour-to-hour persistence.
-
-## Time-Series Cross-Validation
-
-To verify that the result was not dependent on a single train-test split, `TimeSeriesSplit` with four folds was used.
-
-```text
-Fold 1: MAE = 129.36, RMSE = 189.79
-Fold 2: MAE = 115.95, RMSE = 153.52
-Fold 3: MAE = 118.93, RMSE = 155.06
-Fold 4: MAE = 117.96, RMSE = 157.38
-```
-
-Average results:
-
-| Metric |       Mean |   Std |
-| ------ | ---------: | ----: |
-| MAE    | **120.55** |  5.20 |
-| RMSE   | **163.94** | 14.99 |
-
-The relatively small MAE standard deviation indicates stable performance across different temporal folds.
-
-## Overfitting Check
-
-Training and holdout errors were compared:
-
-```text
-Train MAE: 103.13
-Test MAE:  117.33
-Difference: 14.20
-```
-
-The test error is higher than the training error, as expected, but there is no large degradation in performance.
-
-The additional time-series cross-validation also showed consistent results across temporal folds.
-
-## Error Analysis
-
-Model errors were analyzed by:
-
-* hour of day;
-* day of week;
-* month;
-* year;
-* largest absolute errors.
-
-The model performs well across most periods, while the largest errors are concentrated around several abrupt increases or decreases in energy consumption.
-
-This suggests that the remaining prediction errors are primarily associated with sudden changes that are difficult to infer from historical consumption and calendar features alone.
-
-## Model Interpretation
-
-Permutation importance showed that short-term temporal dependencies are the most informative signals.
-
-The most important features were:
-
-1. `lag_1`
-2. `hour_cos`
-3. `lag_2`
-4. `hour`
-5. `hour_sin`
-6. `lag_3`
-
-Longer-term lag and rolling features had substantially lower importance.
-
-## Reproducibility
-
-The trained model is stored in:
-
-```text
-models/energy_forecasting_model.joblib
-```
-
-The artifact contains:
-
-* trained `HistGradientBoostingRegressor`;
-* the feature list required for inference.
-
-## Technologies
-
-* Python
-* Pandas
-* NumPy
-* Scikit-learn
-* Matplotlib
-* Joblib
-* Jupyter Notebook
-
-## Key Takeaways
-
-The project demonstrates a complete machine-learning workflow for a temporal forecasting problem:
-
-**EDA → baseline → feature engineering → model training → evaluation → time-series cross-validation → backtesting → error analysis → robustness check.**
-
-The final gradient boosting model significantly outperformed the naive previous-hour baseline while maintaining stable performance across multiple temporal validation folds.
+`Python` · `Pandas` · `NumPy` · `Scikit-learn` · `Matplotlib` · `Joblib` · `Jupyter`
