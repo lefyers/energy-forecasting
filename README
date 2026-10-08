@@ -1,33 +1,58 @@
 # Energy Forecasting
 
-Исследовательский проект по прогнозированию почасового энергопотребления.
+Hourly electricity consumption forecasting using machine learning.
 
-Для исследования использовал исторический датасет из **Kaggle** за период `2004–2018`. На этих данных проводил EDA, feature engineering, эксперименты с моделями, временную валидацию и анализ ошибок.
+## What I did
 
-### Подход
+* Cleaned and prepared time-series data.
+* Created calendar, cyclic, lag and rolling features.
+* Trained `HistGradientBoostingRegressor`.
+* Used chronological train/test split and `TimeSeriesSplit`.
+* Analyzed model errors and feature importance.
+* Saved the trained model with Joblib.
+* Built a FastAPI prediction API.
+* Added Docker and automated tests.
+* Added health and Prometheus metrics endpoints.
 
-* Анализ и очистка временных рядов
-* Calendar и cyclic features
-* Lag features и rolling statistics
-* `HistGradientBoostingRegressor`
-* Chronological split
-* `TimeSeriesSplit`
-* Error analysis и permutation importance
-* Проверка стабильности модели на разных временных периодах
+## Model
 
-### Структура
+`HistGradientBoostingRegressor`
+
+17 features including:
+
+* calendar features;
+* cyclic time features;
+* lag features;
+* rolling averages.
+
+## API
 
 ```text
-notebooks/
-├── 01_eda.ipynb
-├── 02_modeling.ipynb
-└── 03_validation.ipynb
+POST /predict
+GET  /health
+GET  /metrics
 ```
 
-* `01_eda.ipynb` — загрузка данных, очистка и исследовательский анализ.
-* `02_modeling.ipynb` — baseline, feature engineering, обучение модели и анализ ошибок.
-* `03_validation.ipynb` — временная кросс-валидация и проверка стабильности модели.
+Swagger:
 
-### Tech Stack
+```text
+http://localhost:8015/docs
+```
 
-`Python` · `Pandas` · `NumPy` · `Scikit-learn` · `Matplotlib` · `Joblib` · `Jupyter`
+The prediction endpoint requires 169 historical hourly values.
+
+## Run
+
+```bash
+docker compose up --build
+```
+
+Run tests:
+
+```bash
+docker compose run --rm energy-api pytest
+```
+
+## Tech Stack
+
+Python, Pandas, NumPy, Scikit-learn, FastAPI, Pydantic, Joblib, Pytest, Docker.

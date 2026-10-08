@@ -1,0 +1,7 @@
+services:
+  energy-api:
+    build: .
+    container_name: energy-forecasting-api
+    ports:
+      - "8015:8015"
+    restart: unless-stopped
